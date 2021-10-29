@@ -1,0 +1,82 @@
+use std::fmt::Result;
+use float_cmp;
+
+
+#[derive(Debug,PartialEq)]
+enum Units {
+	Feet(f64, String),
+	Inches(f64, String),
+	Meters(f64, String),
+	Centimetres(f64, String),
+	Pound(f64,String),
+	Ounce(f64,String),
+	Kilogram(f64, String),
+	Gram(f64, String),	
+}
+
+impl Units {
+	fn convert(&self) -> Units {
+		match self {
+			// length
+			Units::Feet(val,_) => Units::Meters(val * 0.3048,String::from("m")),
+			Units::Inches(val,_) => Units::Centimetres(val * 2.54,String::from("cm")),
+			Units::Meters(val,_) => Units::Feet(val  / 0.3048,String::from("ft")),
+			Units::Centimetres(val,_) => Units::Inches(val / 2.54,String::from("in")),
+			// weight
+			Units::Pound(val,_) => Units::Kilogram(val * 0.4535924,String::from("kg")),
+			Units::Ounce(val,_) => Units::Gram(val * 28.34952,String::from("g")),
+			Units::Kilogram(val,_) => Units::Pound(val / 0.4535924,String::from("lbs")),
+			Units::Gram(val,_) => Units::Ounce(val / 28.34952,String::from("oz")),
+		}
+	}
+}
+
+fn parse_input(msg: &str) -> Option<Vec<Units>> {
+	let list_possible = vec!["m","cm","kg","g","ft","in","lbs","oz"];
+	None
+}
+
+#[cfg(test)]
+mod tests {
+	
+	use float_cmp::{F64Margin, approx_eq};
+	use super::*;
+	#[test]
+	fn test_conversion() {
+		if let Units::Meters(val_left,_) = Units::Meters(3.048,String::from("m")) {
+			if let Units::Meters(val_right,_) = Units::Feet(10.0,String::from("ft")).convert() {
+				assert!(approx_eq!(f64,val_left,val_right,F64Margin { epsilon: 0.00001, ulps: 2 }),"\nleft != right\n{} != {}",val_left,val_right);
+			}
+		}
+		if let Units::Feet(val_left,_) = Units::Feet(32.80839895,String::from("ft")) {
+			if let Units::Feet(val_right,_) = Units::Meters(10.0,String::from("m")).convert() {
+				assert!(approx_eq!(f64,val_left,val_right,F64Margin { epsilon: 0.00001, ulps: 2 }),"\nleft != right\n{} != {}",val_left,val_right);
+			}
+		}
+		if let Units::Kilogram(val_left,_) = Units::Kilogram(4.535924,String::from("kg")) {
+			if let Units::Kilogram(val_right,_) = Units::Pound(10.0,String::from("lbs")).convert() {
+				assert!(approx_eq!(f64,val_left,val_right,F64Margin { epsilon: 0.00001, ulps: 2 }),"\nleft != right\n{} != {}",val_left,val_right);
+			}
+		}
+		if let Units::Pound(val_left,_) = Units::Pound(22.04623,String::from("lbs")) {
+			if let Units::Pound(val_right,_) = Units::Kilogram(10.0,String::from("kg")).convert() {
+				assert!(approx_eq!(f64,val_left,val_right,F64Margin { epsilon: 0.00001, ulps: 2 }),"\nleft != right\n{} != {}",val_left,val_right);
+			}
+		}
+		if let Units::Ounce(val_left,_) = Units::Ounce(0.3527396,String::from("oz")) {
+			if let Units::Ounce(val_right,_) = Units::Gram(10.0,String::from("g")).convert() {
+				assert!(approx_eq!(f64,val_left,val_right,F64Margin { epsilon: 0.00001, ulps: 2 }),"\nleft != right\n{} != {}",val_left,val_right);
+			}
+		}
+		if let Units::Gram(val_left,_) = Units::Gram(283.4952,String::from("g")) {
+			if let Units::Gram(val_right,_) = Units::Ounce(10.0,String::from("oz")).convert() {
+				assert!(approx_eq!(f64,val_left,val_right,F64Margin { epsilon: 0.00001, ulps: 2 }),"\nleft != right\n{} != {}",val_left,val_right);
+			}
+		}
+	}
+
+	fn test_parsing() {
+
+	}
+}
+

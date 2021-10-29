@@ -9,7 +9,7 @@ enum Units {
 	Inches(f64, String),
 	Kilometer(f64,String),
 	Meters(f64, String),
-	Centimetres(f64, String),
+	Centimeters(f64, String),
 	Pound(f64,String),
 	Ounce(f64,String),
 	Kilogram(f64, String),
@@ -23,11 +23,11 @@ impl Units {
 			// imperial
 			Units::Mile(val,_) => Units::Kilometer(val * 1.609344,String::from("km")),
 			Units::Feet(val,_) => Units::Meters(val * 0.3048,String::from("m")),
-			Units::Inches(val,_) => Units::Centimetres(val * 2.54,String::from("cm")),
+			Units::Inches(val,_) => Units::Centimeters(val * 2.54,String::from("cm")),
 			// metric
 			Units::Kilometer(val,_) =>  Units::Mile(val * 0.6213712,String::from("miles")),
 			Units::Meters(val,_) => Units::Feet(val  / 0.3048,String::from("ft")),
-			Units::Centimetres(val,_) => Units::Inches(val / 2.54,String::from("in")),
+			Units::Centimeters(val,_) => Units::Inches(val / 2.54,String::from("in")),
 			// weight
 			// imperial
 			Units::Pound(val,_) => Units::Kilogram(val * 0.4535924,String::from("kg")),

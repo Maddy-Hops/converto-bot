@@ -4,16 +4,16 @@ use float_cmp::{self, F64Margin, approx_eq};
 
 #[derive(Debug,PartialEq)]
 enum Units {
-	Mile(f64,String),
+	Miles(f64,String),
 	Feet(f64, String),
 	Inches(f64, String),
-	Kilometer(f64,String),
+	Kilometers(f64,String),
 	Meters(f64, String),
 	Centimeters(f64, String),
-	Pound(f64,String),
-	Ounce(f64,String),
-	Kilogram(f64, String),
-	Gram(f64, String),	
+	Pounds(f64,String),
+	Ounces(f64,String),
+	Kilograms(f64, String),
+	Grams(f64, String),	
 }
 
 impl Units {
@@ -21,20 +21,20 @@ impl Units {
 		match self {
 			// length
 			// imperial
-			Units::Mile(val,_) => Units::Kilometer(val * 1.609344,String::from("km")),
+			Units::Miles(val,_) => Units::Kilometers(val * 1.609344,String::from("km")),
 			Units::Feet(val,_) => Units::Meters(val * 0.3048,String::from("m")),
 			Units::Inches(val,_) => Units::Centimeters(val * 2.54,String::from("cm")),
 			// metric
-			Units::Kilometer(val,_) =>  Units::Mile(val * 0.6213712,String::from("miles")),
+			Units::Kilometers(val,_) =>  Units::Miles(val * 0.6213712,String::from("miles")),
 			Units::Meters(val,_) => Units::Feet(val  / 0.3048,String::from("ft")),
 			Units::Centimeters(val,_) => Units::Inches(val / 2.54,String::from("in")),
 			// weight
 			// imperial
-			Units::Pound(val,_) => Units::Kilogram(val * 0.4535924,String::from("kg")),
-			Units::Ounce(val,_) => Units::Gram(val * 28.34952,String::from("grams")),
+			Units::Pounds(val,_) => Units::Kilograms(val * 0.4535924,String::from("kg")),
+			Units::Ounces(val,_) => Units::Grams(val * 28.34952,String::from("grams")),
 			// metric
-			Units::Kilogram(val,_) => Units::Pound(val / 0.4535924,String::from("lbs")),
-			Units::Gram(val,_) => Units::Ounce(val / 28.34952,String::from("oz")),
+			Units::Kilograms(val,_) => Units::Pounds(val / 0.4535924,String::from("lbs")),
+			Units::Grams(val,_) => Units::Ounces(val / 28.34952,String::from("oz")),
 		}
 	}
 }
@@ -86,33 +86,33 @@ mod tests {
 				assert!(approx_eq!(f64,val_left,val_right,F64Margin { epsilon: 0.001, ulps: 2 }),"\nleft != right\n{} != {}",val_left,val_right);
 			}else {panic!("FAILED TO ASSIGN")}
 		}else {panic!("FAILED TO ASSIGN")}
-		if let Units::Kilogram(val_left,_) = Units::Kilogram(4.535924,String::from("kg")) {
-			if let Units::Kilogram(val_right,_) = Units::Pound(10.0,String::from("lbs")).convert() {
+		if let Units::Kilograms(val_left,_) = Units::Kilograms(4.535924,String::from("kg")) {
+			if let Units::Kilograms(val_right,_) = Units::Pounds(10.0,String::from("lbs")).convert() {
 				assert!(approx_eq!(f64,val_left,val_right,F64Margin { epsilon: 0.001, ulps: 2 }),"\nleft != right\n{} != {}",val_left,val_right);
 			}else {panic!("FAILED TO ASSIGN")}
 		}else {panic!("FAILED TO ASSIGN")}
-		if let Units::Pound(val_left,_) = Units::Pound(22.04623,String::from("lbs")) {
-			if let Units::Pound(val_right,_) = Units::Kilogram(10.0,String::from("kg")).convert() {
+		if let Units::Pounds(val_left,_) = Units::Pounds(22.04623,String::from("lbs")) {
+			if let Units::Pounds(val_right,_) = Units::Kilograms(10.0,String::from("kg")).convert() {
 				assert!(approx_eq!(f64,val_left,val_right,F64Margin { epsilon: 0.001, ulps: 2 }),"\nleft != right\n{} != {}",val_left,val_right);
 			}else {panic!("FAILED TO ASSIGN")}
 		}else {panic!("FAILED TO ASSIGN")}
-		if let Units::Ounce(val_left,_) = Units::Ounce(0.3527396,String::from("oz")) {
-			if let Units::Ounce(val_right,_) = Units::Gram(10.0,String::from("g")).convert() {
+		if let Units::Ounces(val_left,_) = Units::Ounces(0.3527396,String::from("oz")) {
+			if let Units::Ounces(val_right,_) = Units::Grams(10.0,String::from("g")).convert() {
 				assert!(approx_eq!(f64,val_left,val_right,F64Margin { epsilon: 0.001, ulps: 2 }),"\nleft != right\n{} != {}",val_left,val_right);
 			}else {panic!("FAILED TO ASSIGN")}
 		}else {panic!("FAILED TO ASSIGN")}
-		if let Units::Gram(val_left,_) = Units::Gram(283.4952,String::from("g")) {
-			if let Units::Gram(val_right,_) = Units::Ounce(10.0,String::from("oz")).convert() {
+		if let Units::Grams(val_left,_) = Units::Grams(283.4952,String::from("g")) {
+			if let Units::Grams(val_right,_) = Units::Ounces(10.0,String::from("oz")).convert() {
 				assert!(approx_eq!(f64,val_left,val_right,F64Margin { epsilon: 0.001, ulps: 2 }),"\nleft != right\n{} != {}",val_left,val_right);
 			}else {panic!("FAILED TO ASSIGN")}
 		}else {panic!("FAILED TO ASSIGN")}
-		if let Units::Mile(val_left,_) = Units::Mile(10.0,String::from("miles")) {
-			if let Units::Mile(val_right,_)  = Units::Kilometer(16.09344,String::from("km")).convert() {
+		if let Units::Miles(val_left,_) = Units::Miles(10.0,String::from("miles")) {
+			if let Units::Miles(val_right,_)  = Units::Kilometers(16.09344,String::from("km")).convert() {
 				assert!(approx_eq!(f64,val_left,val_right,F64Margin { epsilon: 0.001, ulps: 2 }),"\nleft != right\n{} != {}",val_left,val_right);
 			}else {panic!("FAILED TO ASSIGN")}
 		} else {panic!("FAILED TO ASSIGN")}
-		if let Units::Kilometer(val_left,_) = Units::Kilometer(10.0,String::from("km")) {
-			if let Units::Kilometer(val_right,_)  = Units::Mile(6.213712,String::from("miles")).convert() {
+		if let Units::Kilometers(val_left,_) = Units::Kilometers(10.0,String::from("km")) {
+			if let Units::Kilometers(val_right,_)  = Units::Miles(6.213712,String::from("miles")).convert() {
 				assert!(approx_eq!(f64,val_left,val_right,F64Margin { epsilon: 0.001, ulps: 2 }),"\nleft != right\n{} != {}",val_left,val_right);
 			}else {panic!("FAILED TO ASSIGN")}
 		}else {panic!("FAILED TO ASSIGN")}

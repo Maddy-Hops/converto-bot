@@ -151,7 +151,7 @@ fn parse_input(msg: &str) -> Option<Vec<Units>> {
 	let msg: Vec<_> = msg.split_whitespace().collect();
 	let mut values_vec = vec![];
 	for i in 0..msg.len() {
-		let word = msg[i].trim_end_matches(&[',', '.', '/', ';', ':', '|'][..]);
+		let word = msg[i].trim_end_matches(&[',', '.', '/', ';', ':', '|','"','\'','\\'][..]);
 		if LIST_POSSIBLE.contains(&word) {
 			if let Ok(val) = msg[i - 1].parse::<f64>() {
 				values_vec.push(Units::new(val, word));
@@ -169,8 +169,15 @@ fn assemble_response(values_vec: &[Units]) -> String {
 	let mut response = String::new();
 	for v in values_vec {
 		let (value, unit) = Units::destruct_enum(v);
+		if value <= 0.0 {
+			continue;
+		}
 		let (converted_value, converted_unit) = Units::destruct_enum(&v.convert());
-		response.push_str(&format!("{} {} is {:.2} {}\n",value, unit,converted_value, converted_unit ));
+		if converted_value < 1.0 {
+			response.push_str(&format!("{} {} is {} {}\n",value, unit,converted_value, converted_unit ));
+		} else {
+			response.push_str(&format!("{} {} is {:.2} {}\n",value, unit,converted_value, converted_unit ));
+		}
 	}
 	response
 }
@@ -452,14 +459,14 @@ use super::*;
 	}
 	#[test]
 	fn assemble_response_single_unit() {
-		let msg = "Maddy-hops is exactly 0.171 kilometers tall";
+		let msg = "Maddy-hops is exactly 0.00171 kilometers tall";
 		let units_vec = parse_input(msg).unwrap();
-		assert_eq!("0.171 km is 0.11 miles\n".to_string(),assemble_response(&units_vec));
+		assert_eq!("0.00171 km is 0.001062544752 miles\n".to_string(),assemble_response(&units_vec));
 	}
 	#[test]
 	fn assemble_response_multiple_units() {
-		let msg = "Maddy-hops is exactly 0.171 kilometers tall and weighs 140 pounds.";
+		let msg = "Maddy-hops is exactly 0.00171 kilometers tall and weighs 140 pounds.";
 		let units_vec = parse_input(msg).unwrap();
-		assert_eq!("0.171 km is 0.11 miles\n140 lbs is 63.50 kg\n".to_string(),assemble_response(&units_vec));
+		assert_eq!("0.00171 km is 0.001062544752 miles\n140 lbs is 63.50 kg\n".to_string(),assemble_response(&units_vec));
 	}
 }

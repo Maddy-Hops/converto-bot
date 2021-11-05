@@ -1,4 +1,5 @@
 use float_cmp::{self, approx_eq, F64Margin};
+use serenity::model::channel::Message;
 use std::fmt::Result;
 
 #[derive(Debug, PartialEq)]
@@ -23,12 +24,12 @@ impl Units {
 			"cm" | "cms" | "centimeter" | "centimeters" => Units::Centimeters(val, String::from("cm")),
 			"mile" | "miles" => Units::Miles(val, String::from("miles")),
 			"feet" | "foot" | "ft" => Units::Feet(val, String::from("ft")),
-			"inches" | "inch" => Units::Inches(val, String::from("in")),
+			"inches" | "inch" => Units::Inches(val, String::from("inches")),
 			"kg" | "kilogram" | "kilograms" => Units::Kilograms(val, String::from("kg")),
 			"g" | "gram" | "grams" => Units::Grams(val, String::from("grams")),
 			"lbs" | "pound" | "pounds" => Units::Pounds(val, String::from("lbs")),
 			"oz" | "ounces" | "ounce" => Units::Ounces(val, String::from("oz")),
-			_ => panic!("Unknown type was passed into new, check your input"),
+			_ => panic!("Unknown type was passed into Units::new(), check your input"),
 		}
 	}
 
@@ -42,7 +43,7 @@ impl Units {
 			// metric
 			Units::Kilometers(val, _) => Units::Miles(val * 0.6213712, String::from("miles")),
 			Units::Meters(val, _) => Units::Feet(val / 0.3048, String::from("ft")),
-			Units::Centimeters(val, _) => Units::Inches(val / 2.54, String::from("in")),
+			Units::Centimeters(val, _) => Units::Inches(val / 2.54, String::from("inches")),
 			// weight
 			// imperial
 			Units::Pounds(val, _) => Units::Kilograms(val * 0.4535924, String::from("kg")),
@@ -52,6 +53,59 @@ impl Units {
 			Units::Grams(val, _) => Units::Ounces(val / 28.34952, String::from("oz")),
 		}
 	}
+
+	fn destruct_enum(unit: &Units) -> (f64,String) {
+		let value;
+		let unit_identifier;
+		match unit {
+			Units::Miles(val, unit) => {
+				value = val;
+				unit_identifier = unit;
+			},
+			Units::Feet(val, unit) => {
+				value = val;
+				unit_identifier = unit;
+			},
+			Units::Inches(val, unit) => {
+				value = val;
+				unit_identifier = unit;
+			},
+			// metric
+			Units::Kilometers(val, unit) => {
+				value = val;
+				unit_identifier = unit;
+			},
+			Units::Meters(val, unit) => {
+				value = val;
+				unit_identifier = unit;
+			},
+			Units::Centimeters(val, unit) => {
+				value = val;
+				unit_identifier = unit;
+			},
+			// weight
+			// imperial
+			Units::Pounds(val, unit) => {
+				value = val;
+				unit_identifier = unit;
+			},
+			Units::Ounces(val, unit) => {
+				value = val;
+				unit_identifier = unit;
+			},
+			// metric
+			Units::Kilograms(val, unit) => {
+				value = val;
+				unit_identifier = unit;
+			},
+			Units::Grams(val, unit) => {
+				value = val;
+				unit_identifier = unit;
+			},
+		}
+		(*value, unit_identifier.to_string())
+	}
+	
 }
 const list_possible: &'static [&'static str] = &[
 	"km",
@@ -113,10 +167,30 @@ fn parse_input(msg: &str) -> Option<Vec<Units>> {
 	}
 }
 
+fn assemble_response(values_vec: &[Units]) -> String {
+	let mut response = String::new();
+	for v in values_vec {
+		let (value, unit) = Units::destruct_enum(v);
+		let (converted_value, converted_unit) = Units::destruct_enum(&v.convert());
+		response.push_str(&format!("{} {} is {:.2} {}\n",value, unit,converted_value, converted_unit ));
+	}
+	response
+}
+
+pub fn respond_to_msg(msg: &str) -> Option<String>{
+	if let Some(units) = parse_input(msg) {
+		Some(assemble_response(&units))
+	} else {
+		None
+	}
+}
+
 #[cfg(test)]
 mod tests {
 
-	use super::*;
+	use std::net::ToSocketAddrs;
+
+use super::*;
 	use float_cmp::{approx_eq, F64Margin};
 	#[test]
 	fn unit_conversion() {
@@ -376,5 +450,22 @@ mod tests {
 			parse_input(msg),
 			Some(vec![Units::Kilometers(0.00171, String::from("km"))])
 		);
+	}
+
+	#[test]
+	fn destructing_units() {
+		let unit = Units::Feet(300.0,String::from("ft"));
+		assert_eq!(Units::destruct_enum(&unit,),(300.0,String::from("ft")))
+	}
+	#[test]
+	fn assemble_response_single_unit() {
+		let msg = "Maddy-hops is exactly 0.00171 kilometers tall";
+		let units_vec = parse_input(msg).unwrap();
+		assert_eq!("0.00171 km is 0.00106 miles\n".to_string(),assemble_response(&units_vec));
+	}
+	fn assemble_response_multiple_units() {
+		let msg = "Maddy-hops is exactly 0.00171 kilometers tall and weighs 140 pounds.";
+		let units_vec = parse_input(msg).unwrap();
+		assert_eq!("0.00171 km is 0.00106 miles\n140.0 lbs is 63.50293 kg\n".to_string(),assemble_response(&units_vec));
 	}
 }

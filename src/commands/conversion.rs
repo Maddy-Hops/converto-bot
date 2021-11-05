@@ -188,10 +188,9 @@ pub fn respond_to_msg(msg: &str) -> Option<String>{
 
 #[cfg(test)]
 mod tests {
-
-
-use super::*;
+	use super::*;
 	use float_cmp::{approx_eq, F64Margin};
+
 	#[test]
 	fn unit_conversion() {
 		if let Units::Meters(val_left, _) = Units::Meters(3.048, String::from("m")) {
@@ -457,12 +456,14 @@ use super::*;
 		let unit = Units::Feet(300.0,String::from("ft"));
 		assert_eq!(Units::destruct_enum(&unit,),(300.0,String::from("ft")))
 	}
+
 	#[test]
 	fn assemble_response_single_unit() {
 		let msg = "Maddy-hops is exactly 0.00171 kilometers tall";
 		let units_vec = parse_input(msg).unwrap();
 		assert_eq!("0.00171 km is 0.001062544752 miles\n".to_string(),assemble_response(&units_vec));
 	}
+	
 	#[test]
 	fn assemble_response_multiple_units() {
 		let msg = "Maddy-hops is exactly 0.00171 kilometers tall and weighs 140 pounds.";

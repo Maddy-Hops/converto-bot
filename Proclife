@@ -1,1 +1,1 @@
-web: ./target/release/converto-bot
+worker: ./target/release/converto-bot

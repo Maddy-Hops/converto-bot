@@ -1,6 +1,4 @@
-use float_cmp::{self, approx_eq, F64Margin};
-use serenity::model::channel::Message;
-use std::fmt::Result;
+
 
 #[derive(Debug, PartialEq)]
 enum Units {
@@ -107,7 +105,7 @@ impl Units {
 	}
 	
 }
-const list_possible: &'static [&'static str] = &[
+const LIST_POSSIBLE: &[&str] = &[
 	"km",
 	"kms",
 	"kilometers",
@@ -140,7 +138,7 @@ const list_possible: &'static [&'static str] = &[
 
 fn parse_input(msg: &str) -> Option<Vec<Units>> {
 	let mut has_convertibles = false;
-	for elem in list_possible {
+	for elem in LIST_POSSIBLE {
 		if msg.to_lowercase().contains(elem) {
 			has_convertibles = true;
 			break;
@@ -154,13 +152,13 @@ fn parse_input(msg: &str) -> Option<Vec<Units>> {
 	let mut values_vec = vec![];
 	for i in 0..msg.len() {
 		let word = msg[i].trim_end_matches(&[',', '.', '/', ';', ':', '|'][..]);
-		if list_possible.contains(&word) {
+		if LIST_POSSIBLE.contains(&word) {
 			if let Ok(val) = msg[i - 1].parse::<f64>() {
 				values_vec.push(Units::new(val, word));
 			}
 		}
 	}
-	if values_vec.len() > 0 {
+	if !values_vec.is_empty() {
 		Some(values_vec)
 	} else {
 		None
@@ -178,17 +176,12 @@ fn assemble_response(values_vec: &[Units]) -> String {
 }
 
 pub fn respond_to_msg(msg: &str) -> Option<String>{
-	if let Some(units) = parse_input(msg) {
-		Some(assemble_response(&units))
-	} else {
-		None
-	}
+	parse_input(msg).map(|units| assemble_response(&units))
 }
 
 #[cfg(test)]
 mod tests {
 
-	use std::net::ToSocketAddrs;
 
 use super::*;
 	use float_cmp::{approx_eq, F64Margin};
@@ -459,13 +452,14 @@ use super::*;
 	}
 	#[test]
 	fn assemble_response_single_unit() {
-		let msg = "Maddy-hops is exactly 0.00171 kilometers tall";
+		let msg = "Maddy-hops is exactly 0.171 kilometers tall";
 		let units_vec = parse_input(msg).unwrap();
-		assert_eq!("0.00171 km is 0.00106 miles\n".to_string(),assemble_response(&units_vec));
+		assert_eq!("0.171 km is 0.11 miles\n".to_string(),assemble_response(&units_vec));
 	}
+	#[test]
 	fn assemble_response_multiple_units() {
-		let msg = "Maddy-hops is exactly 0.00171 kilometers tall and weighs 140 pounds.";
+		let msg = "Maddy-hops is exactly 0.171 kilometers tall and weighs 140 pounds.";
 		let units_vec = parse_input(msg).unwrap();
-		assert_eq!("0.00171 km is 0.00106 miles\n140.0 lbs is 63.50293 kg\n".to_string(),assemble_response(&units_vec));
+		assert_eq!("0.171 km is 0.11 miles\n140 lbs is 63.50 kg\n".to_string(),assemble_response(&units_vec));
 	}
 }

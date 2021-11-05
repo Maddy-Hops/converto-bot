@@ -9,7 +9,6 @@ use serenity::{
 		StandardFramework,
 	},
 	model::{channel::Message, id::UserId},
-	prelude::*,
 	Client,
 };
 use std::{collections::HashSet, env};

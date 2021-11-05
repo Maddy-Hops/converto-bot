@@ -19,7 +19,7 @@ mod commands;
 use commands::conversion;
 
 #[group]
-#[commands(ping, about)]
+#[commands(about)]
 struct General;
 
 struct Handler;
@@ -53,11 +53,6 @@ async fn main() {
 	client.start().await.expect("The bot stopped");
 }
 
-#[command]
-async fn ping(ctx: &Context, msg: &Message) -> CommandResult {
-	msg.reply(ctx, "Pong!").await?;
-	Ok(())
-}
 
 #[command]
 async fn about(ctx: &Context, msg: &Message) -> CommandResult {

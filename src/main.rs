@@ -42,7 +42,7 @@ async fn main() {
 	let framework = StandardFramework::new()
 		.configure(|c| c.prefix("!").owners(owners))
 		.group(&GENERAL_GROUP);
-
+	
 	let mut client = Client::builder(token)
 		.event_handler(Handler)
 		.framework(framework)
@@ -57,7 +57,7 @@ async fn main() {
 async fn about(ctx: &Context, msg: &Message) -> CommandResult {
 	msg.reply(
 		ctx,
-		"Maddy-hops' bot, is supposed to provide unit conversion services for my personal servers.",
+		"I provide unit conversion capabilities!"
 	)
 	.await?;
 	Ok(())

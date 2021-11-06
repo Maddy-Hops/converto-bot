@@ -1,16 +1,10 @@
-use serenity::{
-	async_trait,
-	client::{Context, EventHandler},
-	framework::{
+use serenity::{Client, async_trait, client::{Context, EventHandler}, framework::{
 		standard::{
 			macros::{command, group},
 			CommandResult,
 		},
 		StandardFramework,
-	},
-	model::{channel::Message, id::UserId},
-	Client,
-};
+	}, model::{channel::Message, id::UserId, prelude::Ready}};
 use std::{collections::HashSet, env};
 
 mod conversion;
@@ -33,6 +27,9 @@ impl EventHandler for Handler {
 			}
 		}
 	}
+	async fn ready(&self, _: Context, ready: Ready) {
+        
+    }
 }
 
 #[tokio::main]

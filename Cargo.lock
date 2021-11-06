@@ -164,7 +164,9 @@ name = "converto-bot"
 version = "0.1.0"
 dependencies = [
  "float-cmp",
+ "futures",
  "mongodb",
+ "serde",
  "serenity",
  "tokio",
 ]
@@ -324,6 +326,7 @@ checksum = "a12aa0eb539080d55c3f2d45a67c3b58b6b0773c1a3ca2dfec66d58c97fd66ca"
 dependencies = [
  "futures-channel",
  "futures-core",
+ "futures-executor",
  "futures-io",
  "futures-sink",
  "futures-task",

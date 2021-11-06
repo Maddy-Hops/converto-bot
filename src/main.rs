@@ -4,16 +4,13 @@ use serenity::{Client, async_trait, client::{Context, EventHandler}, framework::
 			CommandResult,
 		},
 		StandardFramework,
-	}, model::{channel::Message, id::UserId, prelude::Ready}};
+	}, model::{channel::Message, id::UserId}};
 use std::{collections::HashSet, env};
 
 mod conversion;
-mod birthdays;
-
-use birthdays::*;
 
 #[group]
-#[commands(about,update_db)]
+#[commands(about)]
 struct General;
 
 struct Handler;
@@ -27,9 +24,6 @@ impl EventHandler for Handler {
 			}
 		}
 	}
-	async fn ready(&self, _: Context, ready: Ready) {
-        
-    }
 }
 
 #[tokio::main]

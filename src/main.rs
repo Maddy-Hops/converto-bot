@@ -14,11 +14,12 @@ use serenity::{
 use std::{collections::HashSet, env};
 
 mod conversion;
+mod birthdays;
 
-
+use birthdays::*;
 
 #[group]
-#[commands(about,)]
+#[commands(about,update_db)]
 struct General;
 
 struct Handler;
@@ -28,7 +29,7 @@ impl EventHandler for Handler {
 	async fn message(&self, ctx: Context, msg: Message) {
 		if !msg.author.bot {
 			if let Some(reply) = conversion::respond_to_msg(&msg.content){
-				msg.reply(ctx, reply).await.unwrap();
+				msg.reply(&ctx, reply).await.unwrap();
 			}
 		}
 	}

@@ -13,12 +13,12 @@ use serenity::{
 };
 use std::{collections::HashSet, env};
 
-mod commands;
+mod conversion;
 
-use commands::conversion;
+
 
 #[group]
-#[commands(about)]
+#[commands(about,)]
 struct General;
 
 struct Handler;

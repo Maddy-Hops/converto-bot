@@ -76,6 +76,7 @@ impl EventHandler for Handler {
 		database_update(&ctx)
 			.await
 			.expect("failed to update database");
+	}
 }
 
 #[tokio::main]

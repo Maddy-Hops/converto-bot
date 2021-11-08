@@ -78,9 +78,6 @@ async fn main() {
 		data.insert::<BirthdaysDb>(Arc::new(RwLock::new(HashMap::default())));
 		data.insert::<TodayDate>(Arc::new(RwLock::new(Date::<Utc>::from_utc(NaiveDate::from_yo(2021, 1), Utc))));
 	}
-	let settings = Settings::new();
-	let cache = Cache::new_with_settings(settings);
-	
 	client.start().await.expect("The bot stopped");
 }
 

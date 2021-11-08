@@ -1,5 +1,4 @@
 use chrono::{Date, Datelike, NaiveDate, Utc};
-// module to keep track of user's birthdays through a connection to mongodb db
 use serenity::{client::Context, framework::standard::{macros::command, CommandResult}, model::{channel::{Channel, Message}, id::ChannelId}, prelude::{RwLock, TypeMapKey}};
 use mongodb::{options::ClientOptions};
 use std::{collections::HashMap, env, sync::Arc};
@@ -27,7 +26,7 @@ struct Birthday {
 #[owners_only]
 pub async fn update_db(ctx: &Context, _msg: &Message) -> CommandResult{
 	database_update(ctx).await?;
-		// set flag date to today's date
+		// set flag date to trigger search for birthday boys and girls again
 		{
 			let date_lock = {
 				let data_write = ctx.data.read().await;
@@ -39,11 +38,15 @@ pub async fn update_db(ctx: &Context, _msg: &Message) -> CommandResult{
 				*flag_date_write = Date::<Utc>::from_utc(NaiveDate::from_yo(2021, 1),Utc);
 			}
 		}
-
+	Ok(())
+}
+#[command]
+#[owners_only]
+pub async fn add_birthday(ctx: &Context, msg: &Message) -> CommandResult{
 	Ok(())
 }
 
-pub async fn database_update(ctx: &Context) -> CommandResult{
+pub async fn database_update(ctx: &Context) -> CommandResult {
 	let connection_string = env::var("db_connection_string").expect("Database connection string not found");
 	let client_options = ClientOptions::parse(connection_string).await?;
 	let client = mongodb::Client::with_options(client_options)?;

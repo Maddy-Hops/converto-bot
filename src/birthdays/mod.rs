@@ -53,11 +53,10 @@ pub async fn add_birthday(_ctx: &Context, _msg: &Message) -> CommandResult {
 }
 
 pub async fn database_update(ctx: &Context) -> CommandResult {
-	let connection_string = env::var("db_connection_string").expect("Database connection string not found");
+	let connection_string = env::var("DB_CONNECTION_STRING").expect("Database connection string not found");
 	let mut birthdays_dict: HashMap<String, u64> = HashMap::new();
 	{
-		let client_options = ClientOptions::parse(connection_string).await?;
-		let client = mongodb::Client::with_options(client_options)?;
+		let client = mongodb::Client::with_uri_str(connection_string).await?;
 		let db = client.database("discord-bot");
 		let birthdays = db.collection::<Birthday>("birthdays");
 		let filter = doc! {};
@@ -101,6 +100,7 @@ pub async fn notify_users(ctx: &Context, msg: &Message) {
 		let birthdays = birthdays_lock.read().await;
 		birthdays.clone()
 	};
+	println!("{:?}", birthdays);
 
 	let query = {
 		let date = msg.timestamp.date();

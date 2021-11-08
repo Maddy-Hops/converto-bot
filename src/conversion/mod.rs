@@ -1,5 +1,3 @@
-
-
 #[derive(Debug, PartialEq)]
 enum Units {
 	Miles(f64, String),
@@ -60,66 +58,65 @@ impl Units {
 		}
 	}
 
-	fn destruct_enum(unit: &Units) -> (f64,String) {
+	fn destruct_enum(unit: &Units) -> (f64, String) {
 		let value;
 		let unit_identifier;
 		match unit {
 			Units::Miles(val, unit) => {
 				value = val;
 				unit_identifier = unit;
-			},
+			}
 			Units::Feet(val, unit) => {
 				value = val;
 				unit_identifier = unit;
-			},
+			}
 			Units::Inches(val, unit) => {
 				value = val;
 				unit_identifier = unit;
-			},
+			}
 			// metric
 			Units::Kilometers(val, unit) => {
 				value = val;
 				unit_identifier = unit;
-			},
+			}
 			Units::Meters(val, unit) => {
 				value = val;
 				unit_identifier = unit;
-			},
+			}
 			Units::Centimeters(val, unit) => {
 				value = val;
 				unit_identifier = unit;
-			},
+			}
 			// weight
 			// imperial
 			Units::Pounds(val, unit) => {
 				value = val;
 				unit_identifier = unit;
-			},
+			}
 			Units::Ounces(val, unit) => {
 				value = val;
 				unit_identifier = unit;
-			},
+			}
 			// metric
 			Units::Kilograms(val, unit) => {
 				value = val;
 				unit_identifier = unit;
-			},
+			}
 			Units::Grams(val, unit) => {
 				value = val;
 				unit_identifier = unit;
-			},
+			}
 			Units::DegreesCelsius(val, unit) => {
 				value = val;
 				unit_identifier = unit;
-			},
+			}
 			Units::DegreesFahrenheit(val, unit) => {
 				value = val;
 				unit_identifier = unit;
-			},
+			}
 		}
 		(*value, unit_identifier.to_string())
 	}
-	
 }
 const LIST_POSSIBLE: &[&str] = &[
 	"km",
@@ -173,7 +170,7 @@ fn parse_input(msg: &str) -> Option<Vec<Units>> {
 	let msg: Vec<_> = msg.split_ascii_whitespace().collect();
 	let mut values_vec = vec![];
 	for i in 0..msg.len() {
-		let word = msg[i].trim_end_matches(&[',', '.', '/', ';', ':', '|','"','\'','\\'][..]);
+		let word = msg[i].trim_end_matches(&[',', '.', '/', ';', ':', '|', '"', '\'', '\\'][..]);
 		if LIST_POSSIBLE.contains(&word) {
 			if let Ok(val) = msg[i - 1].parse::<f64>() {
 				values_vec.push(Units::new(val, word));
@@ -193,15 +190,21 @@ fn assemble_response(values_vec: &[Units]) -> String {
 		let (value, unit) = Units::destruct_enum(v);
 		let (converted_value, converted_unit) = Units::destruct_enum(&v.convert());
 		if converted_value < 1.0 {
-			response.push_str(&format!("{} {} is {} {}\n",value, unit,converted_value, converted_unit ));
+			response.push_str(&format!(
+				"{} {} is {} {}\n",
+				value, unit, converted_value, converted_unit
+			));
 		} else {
-			response.push_str(&format!("{} {} is {:.2} {}\n",value, unit,converted_value, converted_unit ));
+			response.push_str(&format!(
+				"{} {} is {:.2} {}\n",
+				value, unit, converted_value, converted_unit
+			));
 		}
 	}
 	response
 }
 
-pub fn respond_to_msg(msg: &str) -> Option<String>{
+pub fn respond_to_msg(msg: &str) -> Option<String> {
 	parse_input(msg).map(|units| assemble_response(&units))
 }
 
@@ -604,22 +607,28 @@ mod tests {
 
 	#[test]
 	fn destructing_units() {
-		let unit = Units::Feet(300.0,String::from("ft"));
-		assert_eq!(Units::destruct_enum(&unit,),(300.0,String::from("ft")))
+		let unit = Units::Feet(300.0, String::from("ft"));
+		assert_eq!(Units::destruct_enum(&unit,), (300.0, String::from("ft")))
 	}
 
 	#[test]
 	fn assemble_response_single_unit() {
 		let msg = "Maddy-hops is exactly 0.00171 kilometers tall";
 		let units_vec = parse_input(msg).unwrap();
-		assert_eq!("0.00171 km is 0.001062544752 miles\n".to_string(),assemble_response(&units_vec));
+		assert_eq!(
+			"0.00171 km is 0.001062544752 miles\n".to_string(),
+			assemble_response(&units_vec)
+		);
 	}
-	
+
 	#[test]
 	fn assemble_response_multiple_units() {
 		let msg = "Maddy-hops is exactly 0.00171 kilometers tall and weighs 140 pounds.";
 		let units_vec = parse_input(msg).unwrap();
-		assert_eq!("0.00171 km is 0.001062544752 miles\n140 lbs is 63.50 kg\n".to_string(),assemble_response(&units_vec));
+		assert_eq!(
+			"0.00171 km is 0.001062544752 miles\n140 lbs is 63.50 kg\n".to_string(),
+			assemble_response(&units_vec)
+		);
 	}
 
 	#[test]

@@ -109,7 +109,10 @@ async fn main() {
 
 #[command]
 async fn about(ctx: &Context, msg: &Message) -> CommandResult {
-	msg.reply(ctx, "I provide unit conversion capabilities!")
-		.await?;
+	msg.reply(
+		ctx,
+		"I provide unit conversion capabilities! (and also track birthdays!)",
+	)
+	.await?;
 	Ok(())
 }

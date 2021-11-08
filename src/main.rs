@@ -1,5 +1,6 @@
 use chrono::{Date, NaiveDate, Utc};
-use serenity::{Client, async_trait, client::{Context, EventHandler}, framework::{StandardFramework, standard::{CommandResult, macros::{command, group}}}, model::{channel::Message, id::UserId}, prelude::{RwLock, TypeMapKey}};
+use futures::future::ready;
+use serenity::{Client, async_trait, cache::Settings, client::{Cache, Context, EventHandler}, framework::{StandardFramework, standard::{CommandResult, macros::{command, group}}}, model::{channel::Message, guild, id::UserId, prelude::Ready}, prelude::{RwLock, TypeMapKey}};
 
 use std::{collections::{HashMap, HashSet}, env, sync::Arc};
 
@@ -24,7 +25,6 @@ struct Handler;
 impl EventHandler for Handler {
 	async fn message(&self, ctx: Context, msg: Message) {
 		// check if we've sent a birthday reminder today (if a flag_date has already been set to today's date then we have!)
-		println!("{:?}", msg.timestamp);
 		let date = msg.timestamp.date();
 		let flag_date = {
 			let data_read = ctx.data.read().await;
@@ -51,6 +51,9 @@ impl EventHandler for Handler {
 			}
 		}
 	}
+	async fn ready(&self, ctx: Context, ready: Ready) {
+		database_update(&ctx).await.expect("failed to update database");
+    }
 }
 
 #[tokio::main]
@@ -75,6 +78,8 @@ async fn main() {
 		data.insert::<BirthdaysDb>(Arc::new(RwLock::new(HashMap::default())));
 		data.insert::<TodayDate>(Arc::new(RwLock::new(Date::<Utc>::from_utc(NaiveDate::from_yo(2021, 1), Utc))));
 	}
+	let settings = Settings::new();
+	let cache = Cache::new_with_settings(settings);
 	
 	client.start().await.expect("The bot stopped");
 }

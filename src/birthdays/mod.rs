@@ -1,6 +1,5 @@
 use chrono::{Date, Datelike, NaiveDate, Utc};
 use futures::stream::TryStreamExt;
-use mongodb::options::ClientOptions;
 use mongodb::{bson::doc, options::FindOptions};
 use serde::{Deserialize, Serialize};
 use serenity::{

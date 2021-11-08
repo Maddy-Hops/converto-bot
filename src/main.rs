@@ -81,7 +81,7 @@ impl EventHandler for Handler {
 
 #[tokio::main]
 async fn main() {
-	let token: String = env::var("tutorial_bot_token").expect("Token not found");
+	let token: String = env::var("DISCORD_API_TOKEN").expect("Token not found");
 
 	let mut owners = HashSet::new();
 	owners.insert(UserId::from(360433679111159808));

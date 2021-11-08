@@ -10,6 +10,8 @@ enum Units {
 	Ounces(f64, String),
 	Kilograms(f64, String),
 	Grams(f64, String),
+	DegreesCelsius(f64,String),
+	DegreesFahrenheit(f64,String),
 }
 
 impl Units {
@@ -25,6 +27,8 @@ impl Units {
 			"g" | "gram" | "grams" => Units::Grams(val, String::from("grams")),
 			"lbs" | "pound" | "pounds" => Units::Pounds(val, String::from("lbs")),
 			"oz" | "ounces" | "ounce" => Units::Ounces(val, String::from("oz")),
+			"c" | "℃" | "celsius" => Units::DegreesCelsius(val,String::from("℃")),
+			"f" | "℉" | "fahrenheit" => Units::DegreesFahrenheit(val,String::from("℉")),
 			_ => panic!("Unknown type was passed into Units::new(), check your input"),
 		}
 	}
@@ -47,6 +51,10 @@ impl Units {
 			// metric
 			Units::Kilograms(val, _) => Units::Pounds(val / 0.4535924, String::from("lbs")),
 			Units::Grams(val, _) => Units::Ounces(val / 28.34952, String::from("oz")),
+			// temperature
+			Units::DegreesCelsius(val,_) => Units::DegreesFahrenheit(val * 1.8 + 32_f64, String::from("℉")),
+			Units::DegreesFahrenheit(val,_) => Units::DegreesCelsius((val - 32_f64) / 1.8, String::from("℃")),
+
 		}
 	}
 
@@ -98,6 +106,14 @@ impl Units {
 				value = val;
 				unit_identifier = unit;
 			}
+			Units::DegreesCelsius(val, unit) => {
+				value = val;
+				unit_identifier = unit;
+			}
+			Units::DegreesFahrenheit(val, unit) => {
+				value = val;
+				unit_identifier = unit;
+			}
 		}
 		(*value, unit_identifier.to_string())
 	}
@@ -131,6 +147,12 @@ const LIST_POSSIBLE: &[&str] = &[
 	"oz",
 	"ounces",
 	"ounce",
+	"c",
+	"℃",
+	"celsius",
+	"f",
+	"℉",
+	"fahrenheit",
 ];
 
 fn parse_input(msg: &str) -> Option<Vec<Units>> {
@@ -145,7 +167,7 @@ fn parse_input(msg: &str) -> Option<Vec<Units>> {
 		return None;
 	}
 	let msg = msg.to_lowercase();
-	let msg: Vec<_> = msg.split_whitespace().collect();
+	let msg: Vec<_> = msg.split_ascii_whitespace().collect();
 	let mut values_vec = vec![];
 	for i in 0..msg.len() {
 		let word = msg[i].trim_end_matches(&[',', '.', '/', ';', ':', '|', '"', '\'', '\\'][..]);
@@ -166,9 +188,6 @@ fn assemble_response(values_vec: &[Units]) -> String {
 	let mut response = String::new();
 	for v in values_vec {
 		let (value, unit) = Units::destruct_enum(v);
-		if value <= 0.0 {
-			continue;
-		}
 		let (converted_value, converted_unit) = Units::destruct_enum(&v.convert());
 		if converted_value < 1.0 {
 			response.push_str(&format!(
@@ -372,6 +391,138 @@ mod tests {
 		} else {
 			panic!("FAILED TO ASSIGN")
 		}
+		if let Units::DegreesCelsius(val_left, _) = Units::DegreesCelsius(10.0, String::from("℃")) {
+			if let Units::DegreesCelsius(val_right, _) = Units::DegreesFahrenheit(50.0, String::from("℉")).convert() {
+				assert!(
+					approx_eq!(
+						f64,
+						val_left,
+						val_right,
+						F64Margin {
+							epsilon: 0.001,
+							ulps: 2
+						}
+					),
+					"\nleft != right\n{} != {}",
+					val_left,
+					val_right
+				);
+			} else {
+				panic!("FAILED TO ASSIGN")
+			}
+		} else {
+			panic!("FAILED TO ASSIGN")
+		}
+		if let Units::DegreesCelsius(val_left, _) = Units::DegreesCelsius(0.0, String::from("℃")) {
+			if let Units::DegreesCelsius(val_right, _) = Units::DegreesFahrenheit(32.0, String::from("℉")).convert() {
+				assert!(
+					approx_eq!(
+						f64,
+						val_left,
+						val_right,
+						F64Margin {
+							epsilon: 0.001,
+							ulps: 2
+						}
+					),
+					"\nleft != right\n{} != {}",
+					val_left,
+					val_right
+				);
+			} else {
+				panic!("FAILED TO ASSIGN")
+			}
+		} else {
+			panic!("FAILED TO ASSIGN")
+		}
+		if let Units::DegreesCelsius(val_left, _) = Units::DegreesCelsius(-40.0, String::from("℃")) {
+			if let Units::DegreesCelsius(val_right, _) = Units::DegreesFahrenheit(-40.0, String::from("℉")).convert() {
+				assert!(
+					approx_eq!(
+						f64,
+						val_left,
+						val_right,
+						F64Margin {
+							epsilon: 0.001,
+							ulps: 2
+						}
+					),
+					"\nleft != right\n{} != {}",
+					val_left,
+					val_right
+				);
+			} else {
+				panic!("FAILED TO ASSIGN")
+			}
+		} else {
+			panic!("FAILED TO ASSIGN")
+		}
+		if let Units::DegreesFahrenheit(val_left, _) = Units::DegreesFahrenheit(15.0, String::from("℃")) {
+			if let Units::DegreesFahrenheit(val_right, _) = Units::DegreesCelsius(-9.444444, String::from("℉")).convert() {
+				assert!(
+					approx_eq!(
+						f64,
+						val_left,
+						val_right,
+						F64Margin {
+							epsilon: 0.001,
+							ulps: 2
+						}
+					),
+					"\nleft != right\n{} != {}",
+					val_left,
+					val_right
+				);
+			} else {
+				panic!("FAILED TO ASSIGN")
+			}
+		} else {
+			panic!("FAILED TO ASSIGN")
+		}
+		if let Units::DegreesFahrenheit(val_left, _) = Units::DegreesFahrenheit(0.0, String::from("℃")) {
+			if let Units::DegreesFahrenheit(val_right, _) = Units::DegreesCelsius(-17.77778, String::from("℉")).convert() {
+				assert!(
+					approx_eq!(
+						f64,
+						val_left,
+						val_right,
+						F64Margin {
+							epsilon: 0.001,
+							ulps: 2
+						}
+					),
+					"\nleft != right\n{} != {}",
+					val_left,
+					val_right
+				);
+			} else {
+				panic!("FAILED TO ASSIGN")
+			}
+		} else {
+			panic!("FAILED TO ASSIGN")
+		}
+		if let Units::DegreesFahrenheit(val_left, _) = Units::DegreesFahrenheit(-40.0, String::from("℃")) {
+			if let Units::DegreesFahrenheit(val_right, _) = Units::DegreesCelsius(-40.0, String::from("℉")).convert() {
+				assert!(
+					approx_eq!(
+						f64,
+						val_left,
+						val_right,
+						F64Margin {
+							epsilon: 0.001,
+							ulps: 2
+						}
+					),
+					"\nleft != right\n{} != {}",
+					val_left,
+					val_right
+				);
+			} else {
+				panic!("FAILED TO ASSIGN")
+			}
+		} else {
+			panic!("FAILED TO ASSIGN")
+		}
 	}
 
 	#[test]
@@ -479,4 +630,12 @@ mod tests {
 			assemble_response(&units_vec)
 		);
 	}
+
+	#[test]
+	fn assemble_response_degrees() {
+		let msg = "it's -30 c where I live rn";
+		let units_vec = parse_input(msg).unwrap();
+		assert_eq!("-30 ℃ is -22 ℉\n".to_string(),assemble_response(&units_vec));
+	}
+
 }

@@ -1,9 +1,7 @@
 use chrono::{Date, NaiveDate, Utc};
-use futures::future::ready;
 use serenity::{
 	async_trait,
-	cache::Settings,
-	client::{Cache, Context, EventHandler},
+	client::{Context, EventHandler},
 	framework::{
 		standard::{
 			macros::{command, group},
@@ -11,7 +9,7 @@ use serenity::{
 		},
 		StandardFramework,
 	},
-	model::{channel::Message, guild, id::UserId, prelude::Ready},
+	model::{channel::Message, id::UserId, prelude::Ready},
 	prelude::{RwLock, TypeMapKey},
 	Client,
 };
@@ -74,7 +72,7 @@ impl EventHandler for Handler {
 			}
 		}
 	}
-	async fn ready(&self, ctx: Context, ready: Ready) {
+	async fn ready(&self, ctx: Context, _ready: Ready) {
 		database_update(&ctx)
 			.await
 			.expect("failed to update database");

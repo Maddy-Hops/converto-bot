@@ -6,10 +6,7 @@ use serde::{Deserialize, Serialize};
 use serenity::{
 	client::Context,
 	framework::standard::{macros::command, CommandResult},
-	model::{
-		channel::{Channel, Message},
-		id::ChannelId,
-	},
+	model::channel::Message,
 	prelude::{RwLock, TypeMapKey},
 };
 use std::{collections::HashMap, env, sync::Arc};
@@ -51,7 +48,7 @@ pub async fn update_db(ctx: &Context, _msg: &Message) -> CommandResult {
 }
 #[command]
 #[owners_only]
-pub async fn add_birthday(ctx: &Context, msg: &Message) -> CommandResult {
+pub async fn add_birthday(_ctx: &Context, _msg: &Message) -> CommandResult {
 	Ok(())
 }
 

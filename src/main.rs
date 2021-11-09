@@ -31,7 +31,7 @@ impl TypeMapKey for TodayDate {
 }
 
 #[group]
-#[commands(about, update_db, add_birthday)]
+#[commands(about, update_db, add_birthday, print_db, delete_birthday)]
 struct General;
 
 struct Handler;

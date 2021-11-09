@@ -188,7 +188,7 @@ fn assemble_response(values_vec: &[Units]) -> String {
 	for v in values_vec {
 		let (value, unit) = Units::destruct_enum(v);
 		let (converted_value, converted_unit) = Units::destruct_enum(&v.convert());
-		if converted_value < 1.0 {
+		if converted_value.abs() < 1.0 {
 			response.push_str(&format!(
 				"{} {} is {} {}\n",
 				value, unit, converted_value, converted_unit

@@ -59,10 +59,7 @@ pub async fn add_birthday(ctx: &Context, msg: &Message) -> CommandResult {
 				let client = mongodb::Client::with_uri_str(connection_string).await?;
 				let db = client.database("discord-bot");
 				let birthdays = db.collection::<Birthday>("birthdays");
-				birthdays
-					.insert_one(data_for_insertion, None)
-					.await
-					.unwrap();
+				birthdays.insert_one(data_for_insertion, None).await?;
 			}
 		} else {
 			msg.reply(&ctx.http, "Need to specify dob for adding an entry")

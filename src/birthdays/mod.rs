@@ -1,9 +1,6 @@
 use chrono::{Date, Datelike, NaiveDate, Utc};
 use futures::stream::TryStreamExt;
-use mongodb::{
-	bson::doc,
-	options::{DeleteOptions, FindOptions},
-};
+use mongodb::{bson::doc, options::FindOptions};
 use serde::{Deserialize, Serialize};
 use serenity::{
 	client::Context,
@@ -50,7 +47,31 @@ pub async fn update_db(ctx: &Context, _msg: &Message) -> CommandResult {
 }
 #[command]
 #[owners_only]
-pub async fn add_birthday(_ctx: &Context, _msg: &Message) -> CommandResult {
+pub async fn add_birthday(ctx: &Context, msg: &Message) -> CommandResult {
+	let mut args = Args::new(&msg.content, &[Delimiter::Single(' ')]);
+	args.advance();
+	if let Ok(discord_id) = args.parse::<String>() {
+		args.advance();
+		if let Ok(dob) = args.parse::<String>() {
+			let connection_string = env::var("DB_CONNECTION_STRING").expect("Database connection string not found");
+			let data_for_insertion = Birthday { dob, discord_id };
+			{
+				let client = mongodb::Client::with_uri_str(connection_string).await?;
+				let db = client.database("discord-bot");
+				let birthdays = db.collection::<Birthday>("birthdays");
+				birthdays
+					.insert_one(data_for_insertion, None)
+					.await
+					.unwrap();
+			}
+		} else {
+			msg.reply(&ctx.http, "Need to specify dob for adding an entry")
+				.await?;
+		}
+	} else {
+		msg.reply(&ctx.http, "Need to specify discord_id for adding an entry")
+			.await?;
+	}
 	Ok(())
 }
 
@@ -67,7 +88,7 @@ pub async fn delete_birthday(ctx: &Context, msg: &Message) -> CommandResult {
 			let db = client.database("discord-bot");
 			let birthdays = db.collection::<Birthday>("birthdays");
 			match birthdays
-				.delete_many(doc! {"discord_id": query}, DeleteOptions::builder().build())
+				.delete_many(doc! {"discord_id": query}, None)
 				.await
 			{
 				Ok(deleted_entries) => {
@@ -87,7 +108,6 @@ pub async fn delete_birthday(ctx: &Context, msg: &Message) -> CommandResult {
 					)
 					.await?;
 				}
-				_ => (),
 			}
 		}
 	} else {

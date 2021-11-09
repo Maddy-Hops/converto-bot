@@ -37,7 +37,7 @@ pub async fn update_db(ctx: &Context, _msg: &Message) -> CommandResult {
 				.expect("Expected a TodayDate")
 				.clone()
 		};
-
+		// set flag_date to a date in the past so that we check for if there's someone's birthday on new message
 		{
 			let mut flag_date_write = date_lock.write().await;
 			*flag_date_write = Date::<Utc>::from_utc(NaiveDate::from_yo(2021, 1), Utc);
@@ -137,6 +137,7 @@ pub async fn print_db(ctx: &Context, _msg: &Message) -> CommandResult {
 	Ok(())
 }
 
+// utility function for updating db
 pub async fn database_update(ctx: &Context) -> CommandResult {
 	let connection_string = env::var("DB_CONNECTION_STRING").expect("Database connection string not found");
 	let mut birthdays_dict: HashMap<String, u64> = HashMap::new();
@@ -170,6 +171,7 @@ pub async fn database_update(ctx: &Context) -> CommandResult {
 	Ok(())
 }
 
+// check if someone's birthday is today and notify users
 pub async fn notify_users(ctx: &Context, msg: &Message) {
 	let channel = std::env::var("GENERAL_CHANNEL")
 		.expect("Failed to lookup general-channel id")

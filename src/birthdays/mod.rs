@@ -102,7 +102,18 @@ pub async fn delete_birthday(ctx: &Context, msg: &Message) -> CommandResult {
 
 #[command]
 #[owners_only]
-pub async fn print_db(_ctx: &Context, _msg: &Message) -> CommandResult {
+pub async fn print_db(ctx: &Context, _msg: &Message) -> CommandResult {
+	let birthdays_local = {
+		let data_read = ctx.data.read().await;
+		data_read
+			.get::<BirthdaysDb>()
+			.expect("Expected a BirthdaysDb")
+			.clone()
+			.read()
+			.await
+			.clone()
+	};
+	println!("{:?}", birthdays_local);
 	Ok(())
 }
 

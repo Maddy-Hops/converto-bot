@@ -1,10 +1,13 @@
 use chrono::{Date, Datelike, NaiveDate, Utc};
 use futures::stream::TryStreamExt;
-use mongodb::{bson::doc, options::FindOptions};
+use mongodb::{
+	bson::doc,
+	options::{DeleteOptions, FindOptions},
+};
 use serde::{Deserialize, Serialize};
 use serenity::{
 	client::Context,
-	framework::standard::{macros::command, CommandResult},
+	framework::standard::{macros::command, Args, CommandResult, Delimiter},
 	model::channel::Message,
 	prelude::{RwLock, TypeMapKey},
 };
@@ -53,7 +56,47 @@ pub async fn add_birthday(_ctx: &Context, _msg: &Message) -> CommandResult {
 
 #[command]
 #[owners_only]
-pub async fn delete_birthday(_ctx: &Context, _msg: &Message) -> CommandResult {
+pub async fn delete_birthday(ctx: &Context, msg: &Message) -> CommandResult {
+	let mut args = Args::new(&msg.content, &[Delimiter::Single(' ')]);
+	args.advance();
+	if let Ok(query) = args.parse::<String>() {
+		let connection_string = env::var("DB_CONNECTION_STRING").expect("Database connection string not found");
+
+		{
+			let client = mongodb::Client::with_uri_str(connection_string).await?;
+			let db = client.database("discord-bot");
+			let birthdays = db.collection::<Birthday>("birthdays");
+			match birthdays
+				.delete_many(doc! {"discord_id": query}, DeleteOptions::builder().build())
+				.await
+			{
+				Ok(deleted_entries) => {
+					msg.reply(
+						&ctx.http,
+						format!(
+							"Deleted {} entries matching your query",
+							deleted_entries.deleted_count
+						),
+					)
+					.await?;
+				}
+				Err(why) => {
+					msg.reply(
+						&ctx.http,
+						format!("There was an error processing your querry:\n{:?}", why),
+					)
+					.await?;
+				}
+				_ => (),
+			}
+		}
+	} else {
+		msg.reply(
+			&ctx.http,
+			"Need to specify discord_id for deleting an entry",
+		)
+		.await?;
+	}
 	Ok(())
 }
 

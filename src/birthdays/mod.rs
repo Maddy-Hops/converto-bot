@@ -187,8 +187,6 @@ pub async fn notify_users(ctx: &Context, msg: &Message) {
 		let birthdays = birthdays_lock.read().await;
 		birthdays.clone()
 	};
-	println!("{:?}", birthdays);
-
 	let query = {
 		let date = msg.timestamp.date();
 		format!("{}/{}", date.day(), date.month())

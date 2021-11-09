@@ -51,6 +51,18 @@ pub async fn add_birthday(_ctx: &Context, _msg: &Message) -> CommandResult {
 	Ok(())
 }
 
+#[command]
+#[owners_only]
+pub async fn delete_birthday(_ctx: &Context, _msg: &Message) -> CommandResult {
+	Ok(())
+}
+
+#[command]
+#[owners_only]
+pub async fn print_db(_ctx: &Context, _msg: &Message) -> CommandResult {
+	Ok(())
+}
+
 pub async fn database_update(ctx: &Context) -> CommandResult {
 	let connection_string = env::var("DB_CONNECTION_STRING").expect("Database connection string not found");
 	let mut birthdays_dict: HashMap<String, u64> = HashMap::new();

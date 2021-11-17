@@ -51,18 +51,9 @@ impl EventHandler for Handler {
 			today_date.clone()
 		};
 		if date != flag_date {
-			let date_lock = {
-				let data_write = ctx.data.read().await;
-				data_write
-					.get::<TodayDate>()
-					.expect("Expected a TodayDate")
-					.clone()
-			};
-			// set flag date to today's date
-			{
-				let mut flag_date_write = date_lock.write().await;
-				*flag_date_write = date;
-			}
+			update_flag(&ctx, date)
+				.await
+				.expect("failed to update the date in the DB");
 			notify_users(&ctx, &msg).await;
 		}
 		if !msg.author.bot {

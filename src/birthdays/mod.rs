@@ -23,26 +23,17 @@ struct Birthday {
 	dob: String,
 	discord_id: String,
 }
+#[derive(Debug, Serialize, Deserialize)]
+struct BirthdayFlag {
+	year: i32,
+	month: u32,
+	day: u32,
+}
 
 #[command]
 #[owners_only]
 pub async fn update_db(ctx: &Context, _msg: &Message) -> CommandResult {
 	database_update(ctx).await?;
-	// set flag date to trigger search for birthday boys and girls again
-	{
-		let date_lock = {
-			let data_write = ctx.data.read().await;
-			data_write
-				.get::<TodayDate>()
-				.expect("Expected a TodayDate")
-				.clone()
-		};
-		// set flag_date to a date in the past so that we check for if there's someone's birthday on new message
-		{
-			let mut flag_date_write = date_lock.write().await;
-			*flag_date_write = Date::<Utc>::from_utc(NaiveDate::from_yo(2021, 1), Utc);
-		}
-	}
 	Ok(())
 }
 #[command]
@@ -142,15 +133,35 @@ pub async fn database_update(ctx: &Context) -> CommandResult {
 		let client = mongodb::Client::with_uri_str(connection_string).await?;
 		let db = client.database("discord-bot");
 		let birthdays = db.collection::<Birthday>("birthdays");
+		let birthdays_flag = db.collection::<BirthdayFlag>("birthdays_flag");
 		let filter = doc! {};
 		let find_options = FindOptions::builder()
 			.sort(doc! { "discord_id": 1_i32 })
 			.build();
-		let mut cursor = birthdays.find(filter, find_options).await?;
+		let mut cursor = birthdays.find(filter.clone(), find_options).await?;
 
 		// fill local dictionary from birthdayDb
 		while let Some(birthday) = &cursor.try_next().await? {
 			birthdays_dict.insert(birthday.dob.clone(), birthday.discord_id.parse().unwrap());
+		}
+		let mut cursor = birthdays_flag.find(filter, None).await?;
+		// set TodayDate global to what's in the database
+		if let Some(birthday_flag) = &cursor.try_next().await? {
+			let date = Date::<Utc>::from_utc(
+				NaiveDate::from_ymd(birthday_flag.year, birthday_flag.month, birthday_flag.day),
+				Utc,
+			);
+			let date_lock = {
+				let data_write = ctx.data.read().await;
+				data_write
+					.get::<TodayDate>()
+					.expect("Expected a TodayDate")
+					.clone()
+			};
+			{
+				let mut flag_date_write = date_lock.write().await;
+				*flag_date_write = date;
+			}
 		}
 	}
 	let data_lock = {
@@ -168,6 +179,38 @@ pub async fn database_update(ctx: &Context) -> CommandResult {
 	Ok(())
 }
 
+pub async fn update_flag(ctx: &Context, date: Date<Utc>) -> CommandResult {
+	let date_lock = {
+		let data_write = ctx.data.read().await;
+		data_write
+			.get::<TodayDate>()
+			.expect("Expected a TodayDate")
+			.clone()
+	};
+	// set flag to today's date
+	{
+		let mut flag_date_write = date_lock.write().await;
+		*flag_date_write = date.clone();
+	}
+	// update DB entry
+	let connection_string = env::var("DB_CONNECTION_STRING").expect("Database connection string not found");
+	{
+		let client = mongodb::Client::with_uri_str(connection_string).await?;
+		let db = client.database("discord-bot");
+		let birthdays_flag = db.collection::<BirthdayFlag>("birthdays_flag");
+		let (year, month, day);
+		year = date.year();
+		month = date.month();
+		day = date.day();
+		// delete the old date
+		birthdays_flag.delete_many(doc! {}, None).await?;
+		birthdays_flag
+			.insert_one(BirthdayFlag { year, month, day }, None)
+			.await?;
+	}
+	Ok(())
+}
+
 // check if someone's birthday is today and notify users
 pub async fn notify_users(ctx: &Context, msg: &Message) {
 	let channel = std::env::var("GENERAL_CHANNEL")
@@ -179,7 +222,7 @@ pub async fn notify_users(ctx: &Context, msg: &Message) {
 		let data_read = ctx.data.read().await;
 		let birthdays_lock = data_read
 			.get::<BirthdaysDb>()
-			.expect("expected a TodayDate")
+			.expect("expected a BirthdaysDb")
 			.clone();
 		let birthdays = birthdays_lock.read().await;
 		birthdays.clone()

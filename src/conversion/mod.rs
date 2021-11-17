@@ -58,63 +58,24 @@ impl Units {
 	}
 
 	fn destruct_enum(unit: &Units) -> (f64, String) {
-		let value;
-		let unit_identifier;
 		match unit {
-			Units::Miles(val, unit) => {
-				value = val;
-				unit_identifier = unit;
-			}
-			Units::Feet(val, unit) => {
-				value = val;
-				unit_identifier = unit;
-			}
-			Units::Inches(val, unit) => {
-				value = val;
-				unit_identifier = unit;
-			}
+			Units::Miles(val, unit) => (*val, unit.to_string()),
+			Units::Feet(val, unit) => (*val, unit.to_string()),
+			Units::Inches(val, unit) => (*val, unit.to_string()),
 			// metric
-			Units::Kilometers(val, unit) => {
-				value = val;
-				unit_identifier = unit;
-			}
-			Units::Meters(val, unit) => {
-				value = val;
-				unit_identifier = unit;
-			}
-			Units::Centimeters(val, unit) => {
-				value = val;
-				unit_identifier = unit;
-			}
+			Units::Kilometers(val, unit) => (*val, unit.to_string()),
+			Units::Meters(val, unit) => (*val, unit.to_string()),
+			Units::Centimeters(val, unit) => (*val, unit.to_string()),
 			// weight
 			// imperial
-			Units::Pounds(val, unit) => {
-				value = val;
-				unit_identifier = unit;
-			}
-			Units::Ounces(val, unit) => {
-				value = val;
-				unit_identifier = unit;
-			}
+			Units::Pounds(val, unit) => (*val, unit.to_string()),
+			Units::Ounces(val, unit) => (*val, unit.to_string()),
 			// metric
-			Units::Kilograms(val, unit) => {
-				value = val;
-				unit_identifier = unit;
-			}
-			Units::Grams(val, unit) => {
-				value = val;
-				unit_identifier = unit;
-			}
-			Units::DegreesCelsius(val, unit) => {
-				value = val;
-				unit_identifier = unit;
-			}
-			Units::DegreesFahrenheit(val, unit) => {
-				value = val;
-				unit_identifier = unit;
-			}
+			Units::Kilograms(val, unit) => (*val, unit.to_string()),
+			Units::Grams(val, unit) => (*val, unit.to_string()),
+			Units::DegreesCelsius(val, unit) => (*val, unit.to_string()),
+			Units::DegreesFahrenheit(val, unit) => (*val, unit.to_string()),
 		}
-		(*value, unit_identifier.to_string())
 	}
 }
 const LIST_POSSIBLE: &[&str] = &[
@@ -156,8 +117,9 @@ const LIST_POSSIBLE: &[&str] = &[
 
 fn parse_input(msg: &str) -> Option<Vec<Units>> {
 	let mut has_convertibles = false;
+	let msg = msg.to_lowercase();
 	for elem in LIST_POSSIBLE {
-		if msg.to_lowercase().contains(elem) {
+		if msg.contains(elem) {
 			has_convertibles = true;
 			break;
 		}
@@ -165,7 +127,7 @@ fn parse_input(msg: &str) -> Option<Vec<Units>> {
 	if !has_convertibles {
 		return None;
 	}
-	let msg = msg.to_lowercase();
+
 	let msg: Vec<_> = msg.split_ascii_whitespace().collect();
 	let mut values_vec = vec![];
 	for i in 0..msg.len() {
@@ -641,7 +603,7 @@ mod tests {
 		let msg = "it's -30 c where I live rn";
 		let units_vec = parse_input(msg).unwrap();
 		assert_eq!(
-			"-30 ℃ is -22 ℉\n".to_string(),
+			"-30 ℃ is -22.00 ℉\n".to_string(),
 			assemble_response(&units_vec)
 		);
 	}

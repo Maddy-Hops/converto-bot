@@ -1,6 +1,6 @@
 use chrono::{Date, Datelike, NaiveDate, Utc};
 use futures::stream::TryStreamExt;
-use mongodb::{bson::doc, options::FindOptions};
+use mongodb::bson::doc;
 use serde::{Deserialize, Serialize};
 use serenity::{
 	client::Context,
@@ -15,7 +15,7 @@ use crate::TodayDate;
 pub struct BirthdaysDb;
 
 impl TypeMapKey for BirthdaysDb {
-	type Value = Arc<RwLock<HashMap<String, u64>>>;
+	type Value = Arc<RwLock<HashMap<u64, String>>>;
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -45,7 +45,7 @@ pub async fn add_birthday(ctx: &Context, msg: &Message) -> CommandResult {
 		args.advance();
 		if let Ok(dob) = args.parse::<String>() {
 			let connection_string = env::var("DB_CONNECTION_STRING").expect("Database connection string not found");
-			let data_for_insertion = Birthday { dob, discord_id };
+			let data_for_insertion = Birthday { discord_id, dob };
 			{
 				let client = mongodb::Client::with_uri_str(connection_string).await?;
 				let db = client.database("discord-bot");
@@ -128,21 +128,18 @@ pub async fn print_db(ctx: &Context, _msg: &Message) -> CommandResult {
 // utility function for updating db
 pub async fn database_update(ctx: &Context) -> CommandResult {
 	let connection_string = env::var("DB_CONNECTION_STRING").expect("Database connection string not found");
-	let mut birthdays_dict: HashMap<String, u64> = HashMap::new();
+	let mut birthdays_dict: HashMap<u64, String> = HashMap::new();
 	{
 		let client = mongodb::Client::with_uri_str(connection_string).await?;
 		let db = client.database("discord-bot");
 		let birthdays = db.collection::<Birthday>("birthdays");
 		let birthdays_flag = db.collection::<BirthdayFlag>("birthdays_flag");
 		let filter = doc! {};
-		let find_options = FindOptions::builder()
-			.sort(doc! { "discord_id": 1_i32 })
-			.build();
-		let mut cursor = birthdays.find(filter.clone(), find_options).await?;
+		let mut cursor = birthdays.find(doc! {}, None).await?;
 
 		// fill local dictionary from birthdayDb
 		while let Some(birthday) = &cursor.try_next().await? {
-			birthdays_dict.insert(birthday.dob.clone(), birthday.discord_id.parse().unwrap());
+			birthdays_dict.insert(birthday.discord_id.parse().unwrap(), birthday.dob.clone());
 		}
 		let mut cursor = birthdays_flag.find(filter, None).await?;
 		// set TodayDate global to what's in the database
@@ -190,7 +187,7 @@ pub async fn update_flag(ctx: &Context, date: Date<Utc>) -> CommandResult {
 	// set flag to today's date
 	{
 		let mut flag_date_write = date_lock.write().await;
-		*flag_date_write = date.clone();
+		*flag_date_write = date;
 	}
 	// update DB entry
 	let connection_string = env::var("DB_CONNECTION_STRING").expect("Database connection string not found");
@@ -232,11 +229,11 @@ pub async fn notify_users(ctx: &Context, msg: &Message) {
 		format!("{}/{}", date.day(), date.month())
 	};
 
-	birthdays.retain(|dob, _| dob == &query);
+	birthdays.retain(|_, dob| dob == &query);
 	if !birthdays.is_empty() {
 		let mut message = String::new();
 		message += &format!("Today's ({}) the birthday of:", msg.timestamp.date());
-		for (_, id) in birthdays {
+		for (id, _) in birthdays {
 			message += &format!("\n<@!{}>", id);
 		}
 		message += "\n🎂HAPPY BIRTHDAY TO THEM🎂";
